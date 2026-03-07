@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>QR Maker</title>
+  <style>
+    * { box-sizing: border-box; }
+
+       body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1b2838;
+      color: #222;
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      border: 5px solid #223338;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      font: inherit;
+      background: #fff;
+    }
+.colors {
+display: flex;
+justify-content: space-around;
+}
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .radio-row,
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+    }
+
+    .radio-row label,
+    .check-row label {
+      margin: 0;
+      font-weight: normal;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      background: #222;
+      color: #fff;
+    }
+
+    button:hover {
+      opacity: .92;
+    }
+
+    #downloadLinkContainer {
+      margin-top: 20px;
+      padding: 14px;
+      background: #f8f8f8;
+      border-radius: 10px;
+      min-height: 60px;
+    }
+
+    #downloadLinkContainer a {
+      color: #0a58ca;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    #downloadLinkContainer a:hover {
+      text-decoration: underline;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    .color-box {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>QR Maker</h1>
+
+      <form id="qrForm">
+        <div class="grid">
+          <div class="full">
+            <label for="text">Text</label>
+            <textarea id="text" name="text" placeholder="Enter text or emoji here">😀😎🚀🔥🍕🐱🎉💡🎲🌍👨‍💻👩‍🚀🧑‍🔬🏳️‍🌈🇭🇷</textarea>
+          </div>
+
+          <div>
+            <label for="out_path">File name</label>
+            <input id="out_path" name="out_path" type="text" value="emoji_qr_a" placeholder="example: my_qr">
+            <div class="hint">Frontend sends name without .png</div>
+          </div>
+
+          <div>
+            <label for="error">Error correction</label>
+            <select id="error" name="error">
+              <option value="L">L</option>
+              <option value="M" selected>M</option>
+              <option value="Q">Q</option>
+              <option value="H">H</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="border">Border</label>
+            <select id="border" name="border"></select>
+          </div>
+
+          <div>
+            <label for="scale">Scale</label>
+            <select id="scale" name="scale"></select>
+          </div>
+
+          <div>
+            <label>Mode</label>
+            <div class="radio-row">
+              <input type="radio" id="mode_p" name="mode" value="P" checked>
+              <label for="mode_p">P</label>
+
+              <input type="radio" id="mode_1" name="mode" value="1">
+              <label for="mode_1">1</label>
+            </div>
+          </div>
+<div class="full">
+          <div class="colors">
+<div>
+            <label for="fg">Foreground</label>
+            <div class="color-box">
+              <input id="fg" name="fg" type="color" value="#646400">
+              <span id="fgText">#646400</span>
+            </div>
+            </div>
+
+<div>
+            <label for="bg">Background</label>
+            <div class="color-box">
+              <input id="bg" name="bg" type="color" value="#fac800">
+              <span id="bgText">#fac800</span>
+            </div>
+            </div>
+
+          </div>
+          </div>
+
+
+          <div class="full">
+            <label>Transparency</label>
+            <div class="check-row">
+              <input type="checkbox" id="ts" name="ts">
+              <label for="ts">Transparent background</label>
+            </div>
+          </div>
+
+          <div class="full">
+            <button type="submit">Generate QR</button>
+          </div>
+        </div>
+      </form>
+
+      <div id="downloadLinkContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    const route = "/make_qr"; // change if needed
+
+    const qrForm = document.getElementById("qrForm");
+    const borderSelect = document.getElementById("border");
+    const scaleSelect = document.getElementById("scale");
+    const downloadLinkContainer = document.getElementById("downloadLinkContainer");
+
+    const fgInput = document.getElementById("fg");
+    const bgInput = document.getElementById("bg");
+    const fgText = document.getElementById("fgText");
+    const bgText = document.getElementById("bgText");
+
+    for (let i = 0; i <= 10; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = i;
+      if (i === 1) option.selected = true;
+      borderSelect.appendChild(option);
+    }
+
+    for (let i = 1; i <= 50; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = i;
+      if (i === 20) option.selected = true;
+      scaleSelect.appendChild(option);
+    }
+
+    function updateColorTexts() {
+      fgText.textContent = fgInput.value;
+      bgText.textContent = bgInput.value;
+    }
+
+    updateColorTexts();
+    fgInput.addEventListener("input", updateColorTexts);
+    bgInput.addEventListener("input", updateColorTexts);
+
+    function hexToRgbString(hex) {
+      const clean = hex.replace("#", "");
+      const r = parseInt(clean.slice(0, 2), 16);
+      const g = parseInt(clean.slice(2, 4), 16);
+      const b = parseInt(clean.slice(4, 6), 16);
+      return `${r},${g},${b}`;
+    }
+
+    qrForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const text = document.getElementById("text").value.trim();
+      const outPath = document.getElementById("out_path").value.trim();
+      const error = document.getElementById("error").value;
+      const border = document.getElementById("border").value;
+      const scale = document.getElementById("scale").value;
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      const fg = document.getElementById("fg").value;
+      const bg = document.getElementById("bg").value;
+      const ts = document.getElementById("ts").checked;
+
+      downloadLinkContainer.innerHTML = "";
+
+      if (!text) {
+        const errorName = document.createElement("h3");
+        errorName.innerText = "Text is required.";
+        downloadLinkContainer.appendChild(errorName);
+        return;
+      }
+
+      if (!outPath) {
+        const errorName = document.createElement("h3");
+        errorName.innerText = "File name is required.";
+        downloadLinkContainer.appendChild(errorName);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("text", text);
+      formData.append("out_path", outPath);
+      formData.append("error", error);
+      formData.append("border", border);
+      formData.append("scale", scale);
+      formData.append("mode", mode);
+
+      // send as "r,g,b"
+      formData.append("fg", hexToRgbString(fg));
+      formData.append("bg", hexToRgbString(bg));
+
+      // explicit boolean-ish string
+      formData.append("ts", ts ? "1" : "0");
+
+      fetch(route, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => {
+          downloadLinkContainer.innerHTML = "";
+          if (!response.ok) {
+            throw new Error(response.status + " " + response.statusText);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          const { uri, name } = data;
+
+          const okName = document.createElement("h3");
+          okName.innerText = "QR generated";
+          downloadLinkContainer.appendChild(okName);
+
+          const downloadLink = document.createElement("a");
+          downloadLink.href = uri;
+          downloadLink.download = name;
+          downloadLink.textContent = "Download";
+
+          downloadLinkContainer.appendChild(downloadLink);
+        })
+        .catch((error) => {
+          const errorName = document.createElement("h3");
+          errorName.innerText = `${error}`;
+          downloadLinkContainer.appendChild(errorName);
+        });
+    });
+  </script>
+</body>
+</html>
