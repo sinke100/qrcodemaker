@@ -144,12 +144,12 @@ justify-content: space-around;
         <div class="grid">
           <div class="full">
             <label for="text">Text</label>
-            <textarea id="text" name="text" placeholder="Enter text or emoji here">😀😎🚀🔥🍕🐱🎉💡🎲🌍👨‍💻👩‍🚀🧑‍🔬🏳️‍🌈🇭🇷</textarea>
+            <textarea id="text" name="text" placeholder="Enter text or emoji here"></textarea>
           </div>
 
           <div>
             <label for="out_path">File name</label>
-            <input id="out_path" name="out_path" type="text" value="emoji_qr_a" placeholder="example: my_qr">
+            <input id="out_path" name="out_path" type="text" value="" placeholder="example: my_qr">
             <div class="hint">Frontend sends name without .png</div>
           </div>
 
@@ -188,7 +188,7 @@ justify-content: space-around;
 <div>
             <label for="fg">Foreground</label>
             <div class="color-box">
-              <input id="fg" name="fg" type="color" value="#646400">
+              <input id="fg" name="fg" type="color" value="#000000">
               <span id="fgText">#646400</span>
             </div>
             </div>
@@ -196,7 +196,7 @@ justify-content: space-around;
 <div>
             <label for="bg">Background</label>
             <div class="color-box">
-              <input id="bg" name="bg" type="color" value="#fac800">
+              <input id="bg" name="bg" type="color" value="#ffffff">
               <span id="bgText">#fac800</span>
             </div>
             </div>
@@ -346,4 +346,5 @@ justify-content: space-around;
     });
   </script>
 </body>
+
 </html>
